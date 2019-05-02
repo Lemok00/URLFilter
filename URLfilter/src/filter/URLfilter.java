@@ -130,16 +130,23 @@ class normalFilter extends JFrame {
 					@Override
 					public void run() {
 						try {
+							jProgressBar.setIndeterminate(true);
+							jProgressBar.setStringPainted(false);
 							jTextArea.setText("");
 							jTextArea.append(filter.deleteHTMLTag(filter.getSource(source)));
 							JOptionPane.showMessageDialog(self, source + "爬取完成", "网页爬取完成", JOptionPane.PLAIN_MESSAGE);
 						} catch (Exception e2) {
 							JOptionPane.showMessageDialog(self, "目标URL异常", "无法提取网页信息", JOptionPane.ERROR_MESSAGE);
 							jButton2.setEnabled(false);
+						}finally {
+							jProgressBar.setIndeterminate(false);
+							jProgressBar.setMaximum(1);
+							jProgressBar.setValue(0);
+							jProgressBar.setBorderPainted(false);
+							jButton3.setEnabled(true);
 						}
 					}
 				}).start();
-				jButton3.setEnabled(true);
 			}
 		});
 
@@ -164,7 +171,6 @@ class normalFilter extends JFrame {
 				if (outputPath == null) {
 					return;
 				}
-				jButton5.setEnabled(true);
 				new Thread(new Runnable() {
 
 					@Override
@@ -215,6 +221,7 @@ class normalFilter extends JFrame {
 							c1.set(c);
 							if (c == urlvector.size()) {
 								JOptionPane.showMessageDialog(self, "所有URL过滤完成", "过滤完成", JOptionPane.PLAIN_MESSAGE);
+								jButton5.setEnabled(true);
 								break;
 							}
 							try {

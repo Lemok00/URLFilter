@@ -3,7 +3,7 @@ Java JProgressBar类（进度条） - Hern（hern） - CSDN博客
 Java JProgressBar类（进度条）
 2018年08月07日 23:12:51
 Hern
-阅读数：3824
+阅读数：3826
 版权声明：最终解释权归属Hern、HernSong(hernsong)、苍鹭、www.hernsong.com所有！
 https://blog.csdn.net/qq_36761831/article/details/81490380
 简介利用JProgressBar类可以实现一个进度条。它一般是一种颜色部分或完全填充的矩形。缺省情况下，进度条配备了一个凹陷的边框，并水平放置。?进度条还可以选择显示一个字符串，这个字符串在进度条矩形的中央位置上显示。这个字符串缺省时为耗时任务已完成的百分比。这个字符串可用JProgressBar.setString方法定制。?进度条是一个矩形组件，通过填充它的部分或全部来指示一个任务的执行情况。默认情况下为确定任务执行进度的进度条效果如图23.48所示，填充区域会逐渐增大；如果并不确定任务的执行进度，可以通过调用方法setIndeterminate(boolean b)设置进度条的样式，设为true表示不确定任务的执行进度，填充区域会来回滚动，效果如图23.49所示；设为false则表示确定任务的执行进度。构造方法JProgressBar() ：创建一个显示边框但不带进度字符串的水平进度条。?JProgressBar(BoundedRangeModel newModel) ：创建使用指定的保存进度条数据模型的水平进度条。?JProgressBar(int orient) ：创建具有指定方向（JProgressBar.VERTICAL 或 JProgressBar.HORIZONTAL）的进度条。?JProgressBar(int min, int max) ：创建具有指定最小值和最大值的水平进度条。?JProgressBar(int orient, int min, int max) ：创建使用指定方向、最小值和最大值的进度条。?常用方法?addChangeListener(ChangeListener l)?????????? 将指定的 ChangeListener 添加到进度条。?getMaximum()?????????? 返回进度条的最大值，该值存储在进度条的 BoundedRangeModel 中。?getMinimum()?????????? 返回进度条的最小值，该值存储在进度条的 BoundedRangeModel 中。?getModel()?????????? 返回此进度条使用的数据模型。?getString()?????????? 返回进度字符串的当前值。?getValue()?????????? 返回进度条的当前值，该值存储在进度条的 BoundedRangeModel 中。?setBorderPainted(boolean b)?????????? 设置 borderPainted 属性，如果进度条应该绘制其边框，则此属性为 true。?setMaximum(int n)?????????? 将进度条的最大值（存储在进度条的数据模型中）设置为 n。?setMinimum(int n)?????????? 将进度条的最小值（存储在进度条的数据模型中）设置为 n。?setModel(BoundedRangeModel newModel)?????????? 设置 JProgressBar 使用的数据模型。?setString(String s)?????????? 设置进度字符串的值。?setValue(int n)?????????? 将进度条的当前值（存储在进度条的数据模型中）设置为 n。?setUI(ProgressBarUI ui)?????????? 设置呈现此组件的外观对象。?import java.util.*;import java.awt.*;import java.awt.event.*;import java.io.*;import javax.swing.*;import javax.swing.filechooser.*;import javax.swing.filechooser.FileFilter;public class t3 extends JFrame{
@@ -165,7 +165,7 @@ JProgressBar，进度条。以可视化形式显示某些任务进度的组件。进度条中心可显示进度百
 java 进度条不能刷新解决方案 （已更新一次）
 06-14
 阅读数
-1437
+1438
 java期末考试都考完了，实验课却还没完，课程设计也还没开始做，本来打算把最后两次实验尽快做完，然后好好做课设，(我早就想写的坦克大战，过几天写好了，也肯定要整理发布出来)。可却被多线程一题给坑了，题...
 博文
 来自：
@@ -314,7 +314,7 @@ wuruiaoxue的专栏
 java后端实现返回子线程进度条
 03-18
 阅读数
-2800
+2801
 在一个项目有一个需求是这样的，在上传一个文件后，后台加载文件插入临时表，再重临时表中查出数据返回客户端，最后在进行一段比较费时的数据计算。在计算完成前整个页面都是锁住的，用户不能做任何操作，直到计算完...
 博文
 来自：
@@ -404,7 +404,7 @@ importjava.awt.event.ActionEvent;importjava.awt.event.ActionListener;importjavax
 显示进度的进度条
 11-30
 阅读数
-112
+111
 ?效果：当滑动进度条的时候，会出现进度值，并随滑动而动，松开进度条，进度值消失packagecom.welldone.home.familywidsom.view;importandroid.cont...
 博文
 来自：
@@ -680,7 +680,7 @@ Hern
 访问：
 48万+
 积分：
-9693
+9694
 排名：
 3124
 勋章：
