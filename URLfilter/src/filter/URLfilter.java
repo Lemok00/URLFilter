@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Label;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,12 +16,15 @@ import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -33,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.filechooser.FileFilter;
@@ -61,9 +66,11 @@ class normalFilter extends JFrame {
 	JLabel urLabel = new JLabel("请导入目标URL库");
 	JTextArea jTextArea = new JTextArea();
 	JScrollPane jScrollPane = new JScrollPane(jTextArea);
-	String fileName = null;
+	JProgressBar jProgressBar = new JProgressBar();
 	normalFilter self = this;
+	String fileName = null;
 	String source = null;
+	String outputPath = null;
 	Vector<String> urlvector = null;
 	Vector<String> wordvector = null;
 	AtomicInteger count = new AtomicInteger(0);
@@ -86,9 +93,10 @@ class normalFilter extends JFrame {
 		buttonPanel.add(jButton4);
 		buttonPanel.add(urLabel);
 		buttonPanel.add(jButton5);
+		buttonPanel.add(jProgressBar);
 		jTextArea.setLineWrap(true);
 		jTextArea.setWrapStyleWord(true);
-		jTextArea.setPreferredSize(new Dimension(700, 300));
+		jTextArea.setEditable(false);
 		jButton2.setEnabled(false);
 		jButton4.setEnabled(false);
 		jButton5.setEnabled(false);
@@ -116,14 +124,22 @@ class normalFilter extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				String source = JOptionPane.showInputDialog(self, "请输入目标URL");
 				// 获取url
-				try {
-					jTextArea.setText("");
-					jTextArea.append(filter.deleteHTMLTag(filter.getSource(source)));
-					new JOptionPane().showMessageDialog(self, source + "爬取完成", "网页爬取完成", JOptionPane.PLAIN_MESSAGE);
-				} catch (Exception e2) {
-					new JOptionPane().showMessageDialog(self, "目标URL异常", "无法提取网页信息", JOptionPane.ERROR_MESSAGE);
-					jButton2.setEnabled(false);
-				}
+				jButton3.setEnabled(false);
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							jTextArea.setText("");
+							jTextArea.append(filter.deleteHTMLTag(filter.getSource(source)));
+							JOptionPane.showMessageDialog(self, source + "爬取完成", "网页爬取完成", JOptionPane.PLAIN_MESSAGE);
+						} catch (Exception e2) {
+							JOptionPane.showMessageDialog(self, "目标URL异常", "无法提取网页信息", JOptionPane.ERROR_MESSAGE);
+							jButton2.setEnabled(false);
+						}
+					}
+				}).start();
+				jButton3.setEnabled(true);
 			}
 		});
 
@@ -139,34 +155,76 @@ class normalFilter extends JFrame {
 		jButton5.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				count.set(0);
-				System.out.println(urlvector);
-				HashMap<Integer, Vector<String>> map = new HashMap<>();
-				for (int i = 0; i < 5; i++) {
-					map.put(i, new Vector<>());
+				jButton5.setEnabled(false);
+				JFileChooser jFileChooser = new JFileChooser();
+				jFileChooser.setCurrentDirectory(new File("."));
+				jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				jFileChooser.showDialog(new Label(), "选择输出文件夹");
+				outputPath = jFileChooser.getSelectedFile().getAbsolutePath();
+				if (outputPath == null) {
+					return;
 				}
-				for (int i = 0; i < urlvector.size(); i++) {
-					int j = i % 5;
-					map.get(j).add(urlvector.elementAt(i));
-				}
-				for (int i = 0; i < 5; i++) {
-					if (map.get(i).size() != 0) {
-						new scan(map.get(i), self);
-					}
-				}
-				int c = 0;
-				while (true) {
-					c = count.get();
-					if (c == urlvector.size()) {
-						JOptionPane.showMessageDialog(self, "所有URL过滤完成", "过滤完成", JOptionPane.PLAIN_MESSAGE);
-						break;
-					}
-					try {
-						Thread.sleep(5);
-					} catch (InterruptedException e1) {
+				jButton5.setEnabled(true);
+				new Thread(new Runnable() {
 
+					@Override
+					public void run() {
+						count.set(0);
+						jProgressBar.setIndeterminate(false);
+						jProgressBar.setMinimum(0);
+						jProgressBar.setMaximum(urlvector.size());
+						jProgressBar.setValue(0);
+						jProgressBar.setStringPainted(true);
+						HashMap<Integer, Vector<String>> map = new HashMap<>();
+						int pronum = 3;
+						for (int i = 0; i < pronum; i++) {
+							map.put(i, new Vector<>());
+						}
+						for (int i = 0; i < urlvector.size(); i++) {
+							int j = i % pronum;
+							map.get(j).add(urlvector.elementAt(i));
+						}
+						for (int i = 0; i < pronum; i++) {
+							if (map.get(i).size() != 0) {
+								new scan(map.get(i), self);
+							}
+						}
+						int c = 0;
+						AtomicInteger c1 = new AtomicInteger(0);
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								int c2;
+								do {
+									c2 = c1.get();
+									Dimension dimension = jProgressBar.getSize();
+									Rectangle rectangle = new Rectangle(0, 0, dimension.width, dimension.height);
+									jProgressBar.setValue(c2);
+									jProgressBar.paintImmediately(rectangle);
+									try {
+										Thread.sleep(1000);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								} while (c2 != urlvector.size());
+							}
+						}).start();
+						while (true) {
+							c = count.get();
+							c1.set(c);
+							if (c == urlvector.size()) {
+								JOptionPane.showMessageDialog(self, "所有URL过滤完成", "过滤完成", JOptionPane.PLAIN_MESSAGE);
+								break;
+							}
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e1) {
+
+							}
+						}
 					}
-				}
+				}).start();
 			}
 
 			class scan implements Runnable {
@@ -182,34 +240,40 @@ class normalFilter extends JFrame {
 				@Override
 				public void run() {
 					for (String string : vector) {
+						BufferedWriter bWriter = null;
 						try {
-							Pattern pattern=Pattern.compile("\\w+");
-							Matcher matcher=pattern.matcher(string);
-							String filename="";
+							Pattern pattern = Pattern.compile("\\w+");
+							Matcher matcher = pattern.matcher(string);
+							String filename = "";
 							while (matcher.find()) {
-								filename+=matcher.group();
+								filename += matcher.group();
 							}
-							File file=new File(filename + ".txt");
-							System.out.println(file.getAbsolutePath());
-							if(!file.exists()) {
+							File file = new File(outputPath + "/" + filename + ".txt");
+							if (!file.exists()) {
 								file.createNewFile();
 							}
-							BufferedWriter bWriter = new BufferedWriter(
-									new OutputStreamWriter(new FileOutputStream(file)));
+							bWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 							String source = filter.getSource(string);
 							source = filter.deleteHTMLTag(source);
+							bWriter.write(source);
+							bWriter.newLine();
 							for (String word : wordvector) {
 								if ((source.indexOf(word)) >= 0) {
 									bWriter.write(word);
 									bWriter.newLine();
 								}
 							}
-							bWriter.close();
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							try {
+								bWriter.write("当前网址出现异常，无法爬取");
+							} catch (IOException e1) {
+							}
 						} finally {
 							nFilter.count.incrementAndGet();
+							try {
+								bWriter.close();
+							} catch (IOException e) {
+							}
 						}
 					}
 				}
